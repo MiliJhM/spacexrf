@@ -102,7 +102,7 @@ You can install the current version of *spacexr* from
 ``` r
 # install.packages("devtools")
 options(timeout = 600000000) ### set this to avoid timeout error
-devtools::install_github("dmcable/spacexr", build_vignettes = FALSE)
+devtools::install_github("MiliJhM/spacexrf", build_vignettes = FALSE)
 ```
 
 If you would like to build vignettes (it will take some time), modify

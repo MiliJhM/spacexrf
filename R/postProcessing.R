@@ -2,6 +2,7 @@
 
 # Collects RCTD results
 gather_results <- function(RCTD, results, keep_scores = TRUE, make_sparse = FALSE) {
+  message("Gathering Results...")
   cell_type_names <- RCTD@cell_type_info$renorm[[2]]
   barcodes <- colnames(RCTD@spatialRNA@counts)
   N <- length(results)
