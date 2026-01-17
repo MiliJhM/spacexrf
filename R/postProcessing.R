@@ -1,43 +1,67 @@
 #functions for processing data after RCTD is fit to the data
 
 # Collects RCTD results
-gather_results <- function(RCTD, results) {
-  cell_type_names = RCTD@cell_type_info$renorm[[2]]
+gather_results <- function(RCTD, results, keep_scores = TRUE, make_sparse = FALSE) {
+  cell_type_names <- RCTD@cell_type_info$renorm[[2]]
   barcodes <- colnames(RCTD@spatialRNA@counts)
   N <- length(results)
-  weights = Matrix(0, nrow = N, ncol = length(cell_type_names))
-  weights_doublet = Matrix(0, nrow = N, ncol = 2)
-  rownames(weights) = barcodes; rownames(weights_doublet) = barcodes
-  colnames(weights) = cell_type_names; colnames(weights_doublet) = c('first_type', 'second_type')
-  empty_cell_types = factor(character(N),levels = cell_type_names)
+  K <- length(cell_type_names)
+
+  # Vectorized dense weights
+  weights <- t(vapply(results, function(r) r$all_weights, numeric(K)))
+  colnames(weights) <- cell_type_names
+  rownames(weights) <- barcodes
+
+  weights_doublet <- t(vapply(results, function(r) r$doublet_weights, numeric(2)))
+  colnames(weights_doublet) <- c("first_type", "second_type")
+  rownames(weights_doublet) <- barcodes
+
+  # Avoiding each-row assignment
+  spot_class   <- vapply(results, function(r) r$spot_class, character(1))
+  first_type   <- vapply(results, function(r) r$first_type, character(1))
+  second_type  <- vapply(results, function(r) r$second_type, character(1))
+  first_class  <- vapply(results, function(r) r$first_class, logical(1))
+  second_class <- vapply(results, function(r) r$second_class, logical(1))
+  min_score    <- vapply(results, function(r) r$min_score, numeric(1))
+  singlet_score<- vapply(results, function(r) r$singlet_score, numeric(1))
+  conv_all     <- vapply(results, function(r) r$conv_all, logical(1))
+  conv_doublet <- vapply(results, function(r) r$conv_doublet, logical(1))
+
   spot_levels <- c("reject", "singlet", "doublet_certain", "doublet_uncertain")
-  results_df <- data.frame(spot_class = factor(character(N),levels=spot_levels),
-                           first_type = empty_cell_types, second_type = empty_cell_types,
-                           first_class = logical(N), second_class = logical(N),
-                           min_score = numeric(N), singlet_score = numeric(N),
-                           conv_all = logical(N), conv_doublet = logical(N))
-  score_mat <- list()
-  singlet_scores <- list()
-  for(i in 1:N) {
-    if(i %% 1000 == 0)
-      print(paste("gather_results: finished",i))
-    weights_doublet[i,] = results[[i]]$doublet_weights
-    weights[i,] = results[[i]]$all_weights
-    results_df[i, "spot_class"] = results[[i]]$spot_class
-    results_df[i, "first_type"] = results[[i]]$first_type
-    results_df[i, "second_type"] = results[[i]]$second_type
-    results_df[i, "first_class"] = results[[i]]$first_class
-    results_df[i, "second_class"] = results[[i]]$second_class
-    results_df[i, "min_score"] = results[[i]]$min_score
-    results_df[i, "singlet_score"] = results[[i]]$singlet_score
-    results_df[i, "conv_all"] = results[[i]]$conv_all
-    results_df[i, "conv_doublet"] = results[[i]]$conv_doublet
-    score_mat[[i]] <- results[[i]]$score_mat
-    singlet_scores[[i]] <- results[[i]]$singlet_scores
+  results_df <- data.frame(
+    spot_class   = factor(spot_class, levels = spot_levels),
+    first_type   = factor(first_type, levels = cell_type_names),
+    second_type  = factor(second_type, levels = cell_type_names),
+    first_class  = first_class,
+    second_class = second_class,
+    min_score    = min_score,
+    singlet_score= singlet_score,
+    conv_all     = conv_all,
+    conv_doublet = conv_doublet,
+    row.names    = barcodes,
+    check.names  = FALSE
+  )
+
+  if (isTRUE(keep_scores)) {
+    score_mat <- lapply(results, `[[`, "score_mat")
+    singlet_scores <- lapply(results, `[[`, "singlet_scores")
+  } else {
+    score_mat <- NULL
+    singlet_scores <- NULL
   }
-  rownames(results_df) = barcodes
-  RCTD@results <- list(results_df = results_df, weights = weights, weights_doublet = weights_doublet,
-                       score_mat = score_mat, singlet_scores = singlet_scores)
+
+  if (isTRUE(make_sparse)) {
+    weights <- Matrix::Matrix(weights, sparse = TRUE)
+    weights_doublet <- Matrix::Matrix(weights_doublet, sparse = TRUE)
+  }
+
+  RCTD@results <- list(
+    results_df = results_df,
+    weights = weights,
+    weights_doublet = weights_doublet,
+    score_mat = score_mat,
+    singlet_scores = singlet_scores
+  )
   return(RCTD)
 }
 
