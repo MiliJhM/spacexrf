@@ -18,9 +18,9 @@ gather_results <- function(RCTD, results, keep_scores = TRUE, make_sparse = FALS
   rownames(weights_doublet) <- barcodes
 
   # Avoiding each-row assignment
-  spot_class   <- vapply(results, function(r) r$spot_class, character(1))
-  first_type   <- vapply(results, function(r) r$first_type, character(1))
-  second_type  <- vapply(results, function(r) r$second_type, character(1))
+  spot_class  <- vapply(results, function(r) as.character(r$spot_class), character(1))
+  first_type  <- vapply(results, function(r) as.character(r$first_type), character(1))
+  second_type <- vapply(results, function(r) as.character(r$second_type), character(1))
   first_class  <- vapply(results, function(r) r$first_class, logical(1))
   second_class <- vapply(results, function(r) r$second_class, logical(1))
   min_score    <- vapply(results, function(r) r$min_score, numeric(1))
