@@ -175,15 +175,20 @@ decompose_batch <- function(nUMI, cell_type_means, beads, gene_list, constrain =
   #out_file = "logs/decompose_batch_log.txt"
   #if (file.exists(out_file))
   #  file.remove(out_file)
+  message('Batch decomposing...')
   if(max_cores > 1) {
+    message('Run in multicore mode.')
     numCores = parallel::detectCores()
     if(parallel::detectCores() > max_cores)
       numCores <- max_cores
+    message('Making cluster:')
     cl <- parallel::makeCluster(numCores,setup_strategy = "sequential",outfile="")
+    message(str(cl))
     doParallel::registerDoParallel(cl)
     environ = c('decompose_full','solveIRWLS.weights',
                 'solveOLS','solveWLS', 'Q_mat', 'K_val','X_vals', 'SQ_mat')
     #for(i in 1:100) {
+    message('Running parallel...')
     weights <- foreach::foreach(i = 1:(dim(beads)[1]), .packages = c("quadprog"), .export = environ) %dopar% {
       #if(i %% 100 == 0)
       #  cat(paste0("Finished sample: ",i,"\n"), file=out_file, append=TRUE)
