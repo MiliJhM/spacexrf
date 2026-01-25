@@ -88,7 +88,7 @@ choose_sigma_c <- function(RCTD) {
   message(paste('chooseSigma: using initial Q_mat with sigma = ',sigma/100))
   for(iter in 1:RCTD@config$N_epoch) {
     set_likelihood_vars(Q_mat_all[[as.character(sigma)]], X_vals)
-    #message(paste('chooseSigma: getting initial weights for #samples: ',N_fit))
+    message(paste('chooseSigma: getting initial weights for #samples: ',N_fit))
     results = decompose_batch(puck@nUMI[fit_ind], RCTD@cell_type_info$renorm[[1]], beads, RCTD@internal_vars$gene_list_reg, constrain = F, max_cores = RCTD@config$max_cores)
     weights = Matrix(0, nrow = N_fit, ncol = RCTD@cell_type_info$renorm[[3]])
     rownames(weights) = fit_ind; colnames(weights) = RCTD@cell_type_info$renorm[[2]];
