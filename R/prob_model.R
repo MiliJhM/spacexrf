@@ -9,6 +9,7 @@
 #' Else, uses precomputed values of SQ_mat stored in SQ_mat_all with index sigma
 #' @export
 set_likelihood_vars <- function(Q_mat_loc, X_vals, sigma = NULL) {
+  message('Setting likelihood.')
   Q_mat <<- Q_mat_loc
   N_X <<- dim(Q_mat)[2]
   X_vals <<- X_vals
