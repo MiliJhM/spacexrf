@@ -10,6 +10,8 @@
 #' @export
 set_likelihood_vars <- function(Q_mat_loc, X_vals, sigma = NULL) {
   message('Setting likelihood.')
+  message(str(Q_mat_loc))
+  message(str(X_vals))
   Q_mat <<- Q_mat_loc
   N_X <<- dim(Q_mat)[2]
   X_vals <<- X_vals
@@ -28,6 +30,7 @@ solve_sq <- function(Q_mat, X_vals) {
   diag(M) <- 2*(del[1:(n-1)] + del[2:n])
   M[cbind(2:(n-1), 1:(n-2))] <- del[2:(n-1)]
   M[cbind(1:(n-2), 2:(n-1))] <- del[2:(n-1)]
+  message('solve MI')
   MI <- solve(M)
   fB <- sweep(diff(t(Q_mat)),1,del,'/')
   fBD <- 6*diff(fB)
